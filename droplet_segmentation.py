@@ -44,11 +44,12 @@ def main():
     inputfolder, outputfolder = process_input()
 
     if inputfolder:
-
-        foldername = str.split(inputfolder, '/')[-2]
+        print(str(inputfolder).replace('\\','/'))
+        foldername = str.split(str(inputfolder).replace('\\','/'), '/')[-2]
         inputfiles = list_image_files(inputfolder)
 
-        outfile = outputfolder+foldername+'.csv'
+        outfile = outputfolder/(foldername+'.csv')
+        print(inputfiles[10])
 
         with open(outfile, 'w') as f:
             string = 'Img_num;Droplet_number;R_mean;R_med;R_std;R_max;R_min;Area;Major_axis;Minor_axis;center_x;center_y;time;Beads\n'
@@ -80,7 +81,7 @@ def main():
 
         ############## Generate averaged background image for BG subtraction #################
 
-        bg_rgb = cv2.imread(inputfiles[10], 0)
+        bg_rgb = cv2.imread(str(inputfiles[10]), 0)
         bg = np.zeros_like(bg_rgb)
         bg = bg.astype(np.uint64)
 #
@@ -91,7 +92,7 @@ def main():
         bg_stack = np.zeros((bg_rgb.shape[0], bg_rgb.shape[1], n))
         im = 0
         while im < n:
-            img_rgb = cv2.imread(inputfiles[im])
+            img_rgb = cv2.imread(str(inputfiles[im]))
             img = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
             try:
                 bg_stack[:, :, im] = img[:]
@@ -105,7 +106,7 @@ def main():
 
 
         ####################### Loop for single image segmentation ###########################
-        img_rgb = cv2.imread(inputfiles[0])
+        img_rgb = cv2.imread(str(inputfiles[0]))
         img_rgb = img_rgb[cutTop:cutBottom, :, :]
         img1 = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
@@ -116,11 +117,11 @@ def main():
         #fft_filters = None
         for im in range(len(inputfiles)):
             ### Read image and subtract BG ###
-            img_rgb = cv2.imread(inputfiles[im])
+            img_rgb = cv2.imread(str(inputfiles[im]))
             img_rgb = img_rgb[cutTop:cutBottom, :, :]
             img1 = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
-            imgname = str.split(str.split(inputfiles[im], '/')[-1], '.')[0]
+            imgname = str.split(str.split(str(inputfiles[im]).replace('\\', '/'), '/')[-1], '.')[0]
 
             img = img1.astype(np.uint16)
             img2 = img[:]
@@ -184,7 +185,7 @@ def main():
 
             if saveImages:
                 if im%saveImagesNumber == 0:
-                    cv2.imwrite(outputfolder+imgname+'_contour.png', drawing)
+                    cv2.imwrite(str(outputfolder/(imgname+'_contour.png')), drawing)
 
             if im%50 == 0:
                 print("Image: ", im)

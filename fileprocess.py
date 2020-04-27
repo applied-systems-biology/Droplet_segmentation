@@ -18,131 +18,129 @@ License: BSD-3-Clause, see ./LICENSE or
 https://opensource.org/licenses/BSD-3-Clause for full details
 """
 import os, sys, re
+from pathlib import Path
 
 def get_args():
-	'''
+    '''
     Analyzes the input arguments and drops all the arguments before the script name.
     Returns the extracted arguments.
-	'''
-	args=[]
-	isArgsStarted=False
-	for i in range(len(sys.argv)):
-		if isArgsStarted:
-			args.append(sys.argv[i])
-		else:
-			parts=sys.argv[i].split('.')
-			if parts[-1]=='py':
-				isArgsStarted=True
+    '''
+    args=[]
+    isArgsStarted=False
+    for i in range(len(sys.argv)):
+        if isArgsStarted:
+            args.append(sys.argv[i])
+        else:
+            parts=sys.argv[i].split('.')
+            if parts[-1]=='py':
+                isArgsStarted=True
 
-	return args
+    return args
 
 def printUsage():
-	print('Usage:\npython droplet_segmentation.py <input folder name> <output folder name>')
-	return
+    print('Usage:\npython droplet_segmentation.py <input folder name> <output folder name>')
+    return
         
 def process_input_bg():
-	'''
+    '''
     Checks whether the input arguments are correct. Returns input and output folder names, and bg-path
-	'''
-	args=get_args()
-	if len(args)<3:
-		print('Not enough input arguments\n')
-		printUsage()
-		return 0
-	if os.path.exists(args[0]):
-		inputfolder=args[0]
-		if not inputfolder[-1]=='/':
-			inputfolder+='/'
-	else:
-		print('Input folder does not exist')
-		printUsage()
-		return [0,0]
-	outputfolder=args[1]
-	if not outputfolder[-1]=='/':
-		outputfolder+='/'
-	if not os.path.exists(outputfolder):
-		os.makedirs(outputfolder)	
-	bgname = args[2]
-	return [inputfolder, outputfolder, bgname]
-	
+    '''
+    args=get_args()
+    if len(args)<3:
+        print('Not enough input arguments\n')
+        printUsage()
+        return 0
+    if os.path.exists(args[0]):
+        inputfolder=args[0]
+        if not inputfolder[-1]=='/':
+            inputfolder+='/'
+    else:
+        print('Input folder does not exist')
+        printUsage()
+        return [0,0]
+    outputfolder=args[1]
+    if not outputfolder[-1]=='/':
+        outputfolder+='/'
+    if not os.path.exists(outputfolder):
+        os.makedirs(outputfolder)    
+    bgname = args[2]
+    return [inputfolder, outputfolder, bgname]
+    
 def process_input():
-	'''
+    '''
     Checks whether the input arguments are correct. Returns input and output folder names.
-	'''
-	args=get_args()
-	if len(args)<2:
-		print('Not enough input arguments\n')
-		printUsage()
-		return 0
-	if os.path.exists(args[0]):
-		inputfolder=args[0]
-		if not inputfolder[-1]=='/':
-			inputfolder+='/'
-	else:
-		print('Input folder does not exist')
-		printUsage()
-		return [0,0]
-	outputfolder=args[1]
-	if not outputfolder[-1]=='/':
-		outputfolder+='/'
-	if not os.path.exists(outputfolder):
-		os.makedirs(outputfolder)	
-	return [inputfolder, outputfolder]
-	
+    '''
+    args=get_args()
+    if len(args)<2:
+        print('Not enough input arguments\n')
+        printUsage()
+        return 0
+    inputfolder=Path(args[0])
+    print(inputfolder)
+    if not inputfolder.exists():    
+        print('Input folder does not exist')
+        printUsage()
+        return [0,0]
+    outputfolder=Path(args[1])
+    if not outputfolder.exists():
+        outputfolder.mkdir()    
+    
+    return [inputfolder, outputfolder]
+        
 def process_input_file():
-	'''
+    '''
     Checks whether the input arguments are correct. Returns input and output folder names.
-	'''
-	args=get_args()
-	if len(args)<3:
-		print('Not enough input arguments\n')
-		printUsage()
-		return 0
-	if os.path.exists(args[0]):
-		imgfile=args[0]
-	else:
-		print('Image does not exist')
-		printUsage()
-		return [0,0]
-	if os.path.exists(args[1]):
-		inputfolder=args[1]
-		if not inputfolder[-1]=='/':
-			inputfolder+='/'
-	else:
-		print('Input folder does not exist')
-		printUsage()
-		return [0,0]
-	outputfolder=args[2]
-	if not outputfolder[-1]=='/':
-		outputfolder+='/'
-	if not os.path.exists(outputfolder):
-		os.makedirs(outputfolder)	
-	return [imgfile, inputfolder, outputfolder]
-	
+    '''
+    args=get_args()
+    if len(args)<3:
+        print('Not enough input arguments\n')
+        printUsage()
+        return 0
+    if os.path.exists(args[0]):
+        imgfile=args[0]
+    else:
+        print('Image does not exist')
+        printUsage()
+        return [0,0]
+    if os.path.exists(args[1]):
+        inputfolder=args[1]
+        if not inputfolder[-1]=='/':
+            inputfolder+='/'
+    else:
+        print('Input folder does not exist')
+        printUsage()
+        return [0,0]
+    outputfolder=args[2]
+    if not outputfolder[-1]=='/':
+        outputfolder+='/'
+    if not os.path.exists(outputfolder):
+        os.makedirs(outputfolder)    
+    return [imgfile, inputfolder, outputfolder]
+    
 def process_input_radius():
-	'''
+    '''
     Checks whether the input arguments are correct. Returns input and output folder names
-	'''
-	args=get_args()
-	if len(args)<3:
-		print('Not enough input arguments\n')
-		printUsage()
-		return 0
-	if os.path.exists(args[0]):
-		inputfolder=args[0]
-		if not inputfolder[-1]=='/':
-			inputfolder+='/'
-	else:
-		print('Input folder does not exist')
-		printUsage()
-		return [0,0]
-	outputfolder=args[1]
-	if not outputfolder[-1]=='/':
-		outputfolder+='/'
-	if not os.path.exists(outputfolder):
-		os.makedirs(outputfolder)
-	radius = args[2]
-	return [inputfolder, outputfolder, radius]
+    '''
+    args=get_args()
+    if len(args)<3:
+        print('Not enough input arguments\n')
+        printUsage()
+        return 0
+    if os.path.exists(args[0]):
+        inputfolder=args[0]
+        if not inputfolder[-1]=='/':
+            inputfolder+='/'
+    else:
+        print('Input folder does not exist')
+        printUsage()
+        return [0,0]
+    outputfolder=args[1]
+    if not outputfolder[-1]=='/':
+        outputfolder+='/'
+    if not os.path.exists(outputfolder):
+        os.makedirs(outputfolder)
+    radius = args[2]
+    return [inputfolder, outputfolder, radius]
 
 def sortkey(s):
     '''
@@ -154,64 +152,64 @@ def sortkey(s):
 
 
 def list_image_files(inputfolder):
-	'''
+    '''
     lists image files in an input folder
     returns list of image files with paths to them
-	'''
-	global image_extenstions
-	image_extensions=['png','jpg','jpeg','bmp','PNG','JPG','JPEG','BMP', 'tif', 
+    '''
+    global image_extenstions
+    image_extensions=['png','jpg','jpeg','bmp','PNG','JPG','JPEG','BMP', 'tif', 
                      'TIF', 'tiff', 'TIFF']
-	files=sorted(os.listdir(inputfolder), key = sortkey)
-	imgfiles=[]
-	for i_file in files:
-		parts=i_file.split(".")
-		extension=parts[-1]
-		if (extension in image_extensions):
-			imgfiles.append(inputfolder+i_file)
-	return imgfiles
+    files = sorted(os.listdir(inputfolder), key = sortkey)
+    files = inputfolder.glob('*')
+    imgfiles=[]
+    for i_file in files:
+        extension=i_file.suffix
+        if (str(extension)[1:] in image_extensions):
+            imgfiles.append(i_file)
+    return imgfiles
 
 
 def list_image_files_recursive(inputfolder):
-	'''
+    '''
     lists image files in an input folder and all sub folders
     returns list of image files with paths to them
-	'''
-	global image_extenstions
-	image_extensions=['png','jpg','jpeg','bmp','PNG','JPG','JPEG','BMP']
-	files=sorted(os.listdir(inputfolder), key = sortkey)
-	imgfiles=[]
-	for i_file in files:
-	    if i_file.find(' ') > -1:               # ersetze leerzeichen durch unterstriche
-	        i_file2 = i_file.replace(' ', '_')
-	        os.rename(inputfolder+i_file, inputfolder+i_file2)
-	        i_file = i_file2
-	    if os.path.isdir(inputfolder+i_file) == True: # falls directory, rekursiver aufruf
-	        subfiles = list_image_files_recursive(inputfolder+i_file+'/')
-	        for i_subfile in subfiles:
-	            imgfiles.append(i_subfile)
-	    elif os.path.isfile(inputfolder+i_file) == True:
-		    parts=i_file.split(".")
-		    extension=parts[-1]
-		    if (extension in image_extensions):
-			    imgfiles.append(inputfolder+i_file)
-	return imgfiles
+    '''
+    global image_extenstions
+    image_extensions=['png','jpg','jpeg','bmp','PNG','JPG','JPEG','BMP']
+    files=sorted(os.listdir(inputfolder), key = sortkey)
+    imgfiles=[]
+    for i_file in files:
+        if i_file.find(' ') > -1:               # ersetze leerzeichen durch unterstriche
+            i_file2 = i_file.replace(' ', '_')
+            os.rename(inputfolder+i_file, inputfolder+i_file2)
+            i_file = i_file2
+        if os.path.isdir(inputfolder+i_file) == True: # falls directory, rekursiver aufruf
+            subfiles = list_image_files_recursive(inputfolder+i_file+'/')
+            for i_subfile in subfiles:
+                imgfiles.append(i_subfile)
+        elif os.path.isfile(inputfolder+i_file) == True:
+            parts=i_file.split(".")
+            extension=parts[-1]
+            if (extension in image_extensions):
+                imgfiles.append(inputfolder+i_file)
+    return imgfiles
 
 
 def list_csv_files(inputfolder):
-	'''
+    '''
     lists csv files in an input folder
     returns list of csv files with paths to them
-	'''
-	global tab_extenstions
-	tab_extensions=['csv']
-	files=sorted(os.listdir(inputfolder), key = sortkey)
-	csvfiles=[]
-	for i_file in files:
-		parts=i_file.split(".")
-		extension=parts[-1]
-		if (extension in tab_extensions):
-			csvfiles.append(inputfolder+i_file)
-	return csvfiles
+    '''
+    global tab_extenstions
+    tab_extensions=['csv']
+    files=sorted(os.listdir(inputfolder), key = sortkey)
+    csvfiles=[]
+    for i_file in files:
+        parts=i_file.split(".")
+        extension=parts[-1]
+        if (extension in tab_extensions):
+            csvfiles.append(inputfolder+i_file)
+    return csvfiles
 
 
 
@@ -263,7 +261,7 @@ def matchImageNumberAndTable(folders, csvfiles, endung):
             num = num + 1
 
     return str(num*1./len(folders)*100)+"% image numbers matched csv result lines"
-	
+    
 
 
 
