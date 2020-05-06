@@ -57,7 +57,7 @@ class Droplet():
 
         radii = np.zeros(len(cnt))
         for j in range(len(cnt)):
-            radii[j] = np.sqrt((self.positionX-cnt[j][0][0])**2 + (self.positionY-cnt[j][0][1])**2)
+            radii[j] = np.sqrt((self.positionX-cnt[j][0][0])**2 + ((self.positionY-cutTop)-cnt[j][0][1])**2)
         self.rMean = np.mean(radii)
         self.rMed = np.median(radii)
         self.rStd = np.std(radii)
@@ -182,6 +182,7 @@ class Droplet():
             Returns True if the entire droplet is in the image, False otherwise.
 
         '''
+
         if self.positionX-self.rMed < 0 or self.positionX+self.rMed > shape[1]:
             return False
 

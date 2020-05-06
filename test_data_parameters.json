@@ -1,0 +1,1 @@
+{"inputfolder": "./test_data", "outputfolder": "./Results", "dropMin": 5000, "n bg": 500, "bg subtraction": true, "cutTop": 40, "cutBottom": -60, "offset": 4}

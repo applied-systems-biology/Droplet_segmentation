@@ -24,6 +24,7 @@ from functions import segmentDroplets, seperateBeadsFromBorder
 from functions import seperateSingleBeads, edgeoff2
 from droplets_class import Droplet
 
+__version__ = '0.2'
 ###############################################################################################
 
 def main():
@@ -41,7 +42,9 @@ def main():
     None.
 
     '''
-    inputfolder, outputfolder = process_input()
+    parameters = process_input()
+    inputfolder = parameters['inputfolder']
+    outputfolder = parameters['outputfolder']
 
     if inputfolder:
         print(str(inputfolder).replace('\\','/'))
@@ -63,13 +66,39 @@ def main():
         clumpsizes = np.array([238, 456, 660, 1000])
 
         # values for image cropping
-        cutTop = 40
-        cutBottom = -60
+        try:
+            use_bg_subtraction = parameters['bg subtraction']
+        except:
+            print('Background subtraction is by default on')
+            use_bg_subtraction = True
+        try:
+            cutTop = parameters['cutTop']
+        except:
+            print('The cut at the top of the image is set to the standard of 40 pixels')
+            cutTop = 40
+        try:
+            cutBottom = parameters['cutbottom']
+        except:
+            print('The cut at the bottom of the image is set to the standard of 60 pixels')
+            cutBottom = -60
 
         # values for accepted droplet and bead sizes (areas)
         # seperator = value for seperation of single beads and clusters
-        dropMin = 5000
-        dropMax = 300000
+        try:
+            dropMin = parameters['dropMin']
+        except:
+            print('Droplet minimal size is set to the default of 5000 pixels')
+            dropMin = 5000
+        try:
+            dropMax = parameters['dropMax']
+        except:
+            print('Droplet maximal size is set to the default of 300000 pixels')
+            dropMax = 300000
+        try:
+            offset = parameters['offset']
+        except:
+            print('Offset of the Laplacian image thresholding set to the default of 4')
+            offset = 4
         beadMin = 140
         beadMax = 20000
         seperator = 300
@@ -85,24 +114,30 @@ def main():
         bg = np.zeros_like(bg_rgb)
         bg = bg.astype(np.uint64)
 #
-        n = 5 # number of images for avgeraging
+        try:
+            n = parameters['n bg']
+        except:
+            print('Number of images for background substraction is set to the default number 5')    
+            n = 5 # number of images for avgeraging
+            
         if n > len(inputfiles):
             n = len(inputfiles)
 #
         bg_stack = np.zeros((bg_rgb.shape[0], bg_rgb.shape[1], n))
-        im = 0
-        while im < n:
-            img_rgb = cv2.imread(str(inputfiles[im]))
-            img = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-            try:
-                bg_stack[:, :, im] = img[:]
-                im += 1
-            except StopIteration:
-                pass
-        bg = np.median(bg_stack, axis=2)
-        bg = bg[cutTop:cutBottom]
-        bg = bg.astype(np.uint8)
-        bg = 255 - bg
+        if use_bg_subtraction:
+            im = 0
+            while im < n:
+                img_rgb = cv2.imread(str(inputfiles[im]))
+                img = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
+                try:
+                    bg_stack[:, :, im] = img[:]
+                    im += 1
+                except StopIteration:
+                    pass
+            bg = np.median(bg_stack, axis=2)
+            bg = bg[cutTop:cutBottom]
+            bg = bg.astype(np.uint8)
+            bg = 255 - bg
 
 
         ####################### Loop for single image segmentation ###########################
@@ -111,10 +146,11 @@ def main():
         img1 = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
         img = img1.astype(np.uint16)
-        img = img + bg
+        if use_bg_subtraction:
+            img = img + bg
         cv2.normalize(img, img, 0, 255, cv2.NORM_MINMAX)
         img = img.astype(np.uint8)
-        #fft_filters = None
+
         for im in range(len(inputfiles)):
             ### Read image and subtract BG ###
             img_rgb = cv2.imread(str(inputfiles[im]))
@@ -125,7 +161,8 @@ def main():
 
             img = img1.astype(np.uint16)
             img2 = img[:]
-            img2 = img2 + bg
+            if use_bg_subtraction:
+                img2 = img2 + bg
             cv2.normalize(img, img, 0, 255, cv2.NORM_MINMAX)
             img = img.astype(np.uint8)
             cv2.normalize(img2, img2, 0, 255, cv2.NORM_MINMAX)
@@ -139,7 +176,7 @@ def main():
             # beads contains beads inside droplets
             thresh, drop_outer, drop_inner, beads = segmentDroplets(img, beadMin,
                                                                     beadMax, dropMin,
-                                                                    dropMax)
+                                                                    dropMax, offset)
             drop_inner, beads = seperateBeadsFromBorder(drop_inner, beads,
                                                         beadMin, imgname)
 
@@ -162,6 +199,7 @@ def main():
             contours, hierarchy = cv2.findContours(drop_outer.copy(),
                                                    cv2.RETR_CCOMP,
                                                    cv2.CHAIN_APPROX_SIMPLE)
+            
             drop_array = []
             for i, cnt in enumerate(contours):
                 if (cv2.contourArea(cnt) > dropMin and
@@ -172,7 +210,6 @@ def main():
                         cv2.drawContours(droptemp, [cnt], -1, 1, -1)
 
                         drop_array.append(drop)
-
             ##################################### Output ##################################
 
             drawing = img_rgb.copy()

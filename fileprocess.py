@@ -17,7 +17,7 @@ Adolf-Reichwein-Straße 23, 07745 Jena, Germany
 License: BSD-3-Clause, see ./LICENSE or
 https://opensource.org/licenses/BSD-3-Clause for full details
 """
-import os, sys, re
+import os, sys, re, json
 from pathlib import Path
 
 def get_args():
@@ -38,7 +38,8 @@ def get_args():
     return args
 
 def printUsage():
-    print('Usage:\npython droplet_segmentation.py <input folder name> <output folder name>')
+    print('Usage:\npython droplet_segmentation.py <input folder name> <output folder name> or')
+    print('python droplet_segmentation.py <parameter_file> in the json format')
     return
         
 def process_input_bg():
@@ -65,27 +66,53 @@ def process_input_bg():
         os.makedirs(outputfolder)    
     bgname = args[2]
     return [inputfolder, outputfolder, bgname]
+
+def check_json_file(jf):
+    if not 'inputfolder' in jf.keys():
+        print('Json file have to specify inputfolder')
+        return False
+    else:
+        jf['inputfolder'] = Path(jf['inputfolder'])
+    if not 'outputfolder' in jf.keys():
+        print('Json file have to specify outputfolder')
+        return False
+    else:
+        jf['outputfolder'] = Path(jf['outputfolder'])
+    
+    return True
     
 def process_input():
     '''
     Checks whether the input arguments are correct. Returns input and output folder names.
     '''
     args=get_args()
-    if len(args)<2:
+    if len(args) < 1:
         print('Not enough input arguments\n')
         printUsage()
         return 0
-    inputfolder=Path(args[0])
-    print(inputfolder)
-    if not inputfolder.exists():    
-        print('Input folder does not exist')
-        printUsage()
-        return [0,0]
-    outputfolder=Path(args[1])
-    if not outputfolder.exists():
-        outputfolder.mkdir()    
-    
-    return [inputfolder, outputfolder]
+    if len(args) == 1:
+        if not (Path(args[0]).suffix == '.json'):
+            print('Single argument is not a json-file.')
+            printUsage()
+        else:
+            with open(Path(args[0])) as json_file:
+                parameters = json.load(json_file)
+            check_json_file(parameters)
+                
+    else:
+        inputfolder=Path(args[0])
+        print(inputfolder)
+        if not inputfolder.exists():    
+            print('Input folder does not exist')
+            printUsage()
+            return [0,0]
+        outputfolder=Path(args[1])
+        if not outputfolder.exists():
+            outputfolder.mkdir()    
+        
+        parameters = {'inputfolder': inputfolder,
+                      'outputfolder': outputfolder} 
+    return parameters
         
 def process_input_file():
     '''

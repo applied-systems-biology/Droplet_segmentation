@@ -117,7 +117,8 @@ def equalize(img, n):
 
 ################################# Segmentation functions ####################################
 
-def segmentDroplets(img, beadMin=100, beadMax=2000, dropMin=15000, dropMax=300000):
+def segmentDroplets(img, beadMin=100, beadMax=2000, dropMin=15000, 
+                    dropMax=300000, offset=4):
     '''
     Finds and segments microfluidic droplets from brightfield microscopy images.
 
@@ -131,12 +132,15 @@ def segmentDroplets(img, beadMin=100, beadMax=2000, dropMin=15000, dropMax=30000
     beadMax : float, optional
          The maximum area, in pixels for an object to possibly be a bead.
          The default is 2000.
-    dropMin : TYPE, optional
+    dropMin : float, optional
          The minimum area, in pixels for an object to possibly be a droplet.
          The default is 15000.
-    dropMax : TYPE, optional
+    dropMax : float, optional
         The maximum area, in pixels for an object to possibly be a droplet.
         The default is 300000.
+    offset: float, optional
+        Offset for the thresholding of the Laplacian image to avoud too many
+        edges being included. Default value is 4.
 
     Returns
     -------
@@ -158,7 +162,8 @@ def segmentDroplets(img, beadMin=100, beadMax=2000, dropMin=15000, dropMax=30000
     cv2.normalize(lapl, lapl, 0, 255, cv2.NORM_MINMAX)
 
     lapl = cv2.GaussianBlur(lapl, (3, 3), 1)
-    ret, thresh = cv2.threshold(lapl, m+4, 1, 0)
+
+    ret, thresh = cv2.threshold(lapl, m+offset, 1, 0)
 
     contours, hierarchy = cv2.findContours(thresh.copy(),
                                            cv2.RETR_CCOMP,

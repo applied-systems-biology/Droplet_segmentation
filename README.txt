@@ -12,6 +12,23 @@ in a terminal. If you for example want to run the test data images and save them
 run:
 > python .\droplet_segmentation.py ./test_data/ ./Results/
 
+Since version 0.2 of this code it is also possible to pass a JSON file with data locations and parameters. The format of the usage it then:
+> python .\droplet_segmentation.py parameter_file.json
+The JSON-file is required to containg the following two parameters:
+'inputfolder' : Directory where the images to be segmented are placed.
+'outputfolder' : Directory where the results should be saved.
+
+The following parameters are optional:
+'dropMin' : The minimum size of a droplet in pixels. Default value is 5000 pixels.
+'dropMax' : The maximum size of a droplet in pixels. Default value is 300000 pixels.
+'cutTop' : The number of pixels that are cut from the top of the image to avoid segemntation of non-relevant structures. Default value is 40 pixels.
+'cutBottom' : The number of pixels that are cut from the bottom of the image to avoid segemntation of non-relevant structures. Default value is -60 pixels.
+'bg subtraction' : Boolean value that indicates if background subtraction is used before droplet segmentation. Default value is True.
+'n bg' : Number of images that are used to calculate the background image. Default value is 5.
+'offset' : Threshold offset when creating the binary image after edge detection. This is included to avoid to many minor edges to be included. Default value is 4.
+
+For the parameters that are missing from the JSON file the default values will be automatically used and a message will be shown.
+
 ----------------------------------------------------------------------------------
 Requirements
 ----------------------------------------------------------------------------------
@@ -20,3 +37,4 @@ Python 3.7.3
 numpy 1.18.1 
 OpenCV 4.2.0
 scikit-image 0.16.2
+json 2.0.9
