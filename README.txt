@@ -26,6 +26,9 @@ The following parameters are optional:
 'bg subtraction' : Boolean value that indicates if background subtraction is used before droplet segmentation. Default value is True.
 'n bg' : Number of images that are used to calculate the background image. Default value is 5.
 'offset' : Threshold offset when creating the binary image after edge detection. This is included to avoid to many minor edges to be included. Default value is 4.
+'save masks' : Boolean deciding if the masks will be saved as part of the run. False by default.
+'save images' : Boolean deciding if the images with the segmentation outline should be saved. Very useful for for debuging, True by default.
+'save every x image' : Determines that every xth image with segmentation should be saved. Higher numbers speed up the run and saves disk space. Default value is 10.
 
 For the parameters that are missing from the JSON file the default values will be automatically used and a message will be shown.
 

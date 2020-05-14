@@ -58,7 +58,6 @@ def main():
             string = 'Img_num;Droplet_number;R_mean;R_med;R_std;R_max;R_min;Area;Major_axis;Minor_axis;center_x;center_y;time;Beads\n'
             f.write(string)
 
-
         ############################### Parameters #############################################
 
         # area of bead clusters with [1,2,3,4] beads. Learned from data using k-means clustering
@@ -77,7 +76,7 @@ def main():
             print('The cut at the top of the image is set to the standard of 40 pixels')
             cutTop = 40
         try:
-            cutBottom = parameters['cutbottom']
+            cutBottom = parameters['cutBottom']
         except:
             print('The cut at the bottom of the image is set to the standard of 60 pixels')
             cutBottom = -60
@@ -105,8 +104,22 @@ def main():
 
         # should result images with drawn contours be saved
         # if so, every saveImagesNumber-th image will be saved
-        saveImages = True
-        saveImagesNumber = 1
+        try:
+            saveImages = parameters['save images']
+        except:
+            print('The run will be saving the segmentation images in %s (Default)'%str(outputfolder))
+            saveImages = True
+        try:
+            saveMasks = parameters['save masks']
+        except:
+            print('The run will not be saving the masks of the segmentation (Default)')
+            saveMasks = False
+        try:
+            saveImagesNumber = parameters['save every x image']
+        except:
+            if saveImages:
+                print('The run will be saving every 10th segentation image (Default)')
+                saveImagesNumber = 10
 
         ############## Generate averaged background image for BG subtraction #################
 
@@ -124,6 +137,7 @@ def main():
             n = len(inputfiles)
 #
         bg_stack = np.zeros((bg_rgb.shape[0], bg_rgb.shape[1], n))
+        original_shape = [bg_rgb.shape[0], bg_rgb.shape[1]]
         if use_bg_subtraction:
             im = 0
             while im < n:
@@ -135,14 +149,19 @@ def main():
                 except StopIteration:
                     pass
             bg = np.median(bg_stack, axis=2)
-            bg = bg[cutTop:cutBottom]
+            if cutBottom == 0:
+                bg = bg[cutTop:]
+            else:
+                bg = bg[cutTop:cutBottom]
             bg = bg.astype(np.uint8)
             bg = 255 - bg
 
-
         ####################### Loop for single image segmentation ###########################
         img_rgb = cv2.imread(str(inputfiles[0]))
-        img_rgb = img_rgb[cutTop:cutBottom, :, :]
+        if cutBottom == 0:
+            img_rgb = img_rgb[cutTop:, :, :]
+        else:
+            img_rgb = img_rgb[cutTop:cutBottom, :, :]
         img1 = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
         img = img1.astype(np.uint16)
@@ -154,7 +173,10 @@ def main():
         for im in range(len(inputfiles)):
             ### Read image and subtract BG ###
             img_rgb = cv2.imread(str(inputfiles[im]))
-            img_rgb = img_rgb[cutTop:cutBottom, :, :]
+            if cutBottom == 0:
+                img_rgb = img_rgb[cutTop:, :, :]
+            else:
+                img_rgb = img_rgb[cutTop:cutBottom, :, :]
             img1 = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
 
             imgname = str.split(str.split(str(inputfiles[im]).replace('\\', '/'), '/')[-1], '.')[0]
@@ -223,6 +245,18 @@ def main():
             if saveImages:
                 if im%saveImagesNumber == 0:
                     cv2.imwrite(str(outputfolder/(imgname+'_contour.png')), drawing)
+            if saveMasks:
+                mask = np.zeros(original_shape)
+                if cutBottom == 0:
+                    mask[cutTop:] = drop_outer
+                else:
+                    mask[cutTop:cutBottom] = drop_outer
+                maskFolder = outputfolder / 'Masks'
+                if not maskFolder.exists():
+                    maskFolder.mkdir()
+                if im%saveImagesNumber == 0:
+                    cv2.imwrite(str(maskFolder/(imgname+'.png')), mask)
+                    
 
             if im%50 == 0:
                 print("Image: ", im)
